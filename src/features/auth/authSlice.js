@@ -94,7 +94,6 @@ export const updatePassword = createAsyncThunk(
   }
 );
 
-
 const authSlice = createSlice({
   name: "auth",
   initialState,
@@ -113,13 +112,15 @@ const authSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(registerUser.fulfilled, (state) => {
+      .addCase(registerUser.fulfilled, (state, action) => {
         state.loading = false;
-        state.error = null;
+        state.user = action.payload.user;
+        state.token = action.payload.token;
+        localStorage.setItem("token", action.payload.token);
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload?.message;
+        state.error = action.error.message;
       })
 
       // Login
@@ -172,7 +173,6 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = action.payload?.message;
       });
-      
   },
 });
 

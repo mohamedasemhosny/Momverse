@@ -1,41 +1,40 @@
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import signupImg from "@/assets/signup-img.png";
-import googleIcon from "@/assets/google.svg";
-import facebookIcon from "@/assets/Facebook.svg";
-import appleIcon from "@/assets/apple.svg";
 import Button from "@/components/common/Button";
 import InputFelid from "@/components/common/InputFelid";
 import { Link } from "react-router-dom";
 import { registerUser } from "@/features/auth/authSlice";
-import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
-const SignUp = () => {
+export default function SignUp() {
   const dispatch = useDispatch();
-  const { loading } = useSelector((state) => state.auth);
+  const navigate  = useNavigate();
+  const { loading, error } = useSelector((state) => state.auth);
 
   const [formData, setFormData] = useState({
-    username: "",
-    email: "",
-    phoneNumber: "",
-    password: "",
+    username: '',
+    email: '',
+    phoneNumber: '',
+    password: '',
   });
 
 
   const handleChange = (e) => {
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    setFormData((f) => ({ ...f, [name]: value }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-
-    const { username, email, phoneNumber, password } = formData;
-    if (!username || !email || !phoneNumber || !password) {
-      toast.error("please fill all the fields.");
-      return;
-    }
-
-    dispatch(registerUser(formData));
+    dispatch(registerUser(formData))
+      .unwrap()
+      .then(() => {
+        navigate('/', { state: { justRegistered: true } });
+      })
+      .catch(() => {
+        // error is already in Redux state, so we don’t need to do anything here
+      });
   };
 
   return (
@@ -43,6 +42,11 @@ const SignUp = () => {
       <div>
         <img src={signupImg} alt="signup" className="max-h-screen" />
       </div>
+            {error && (
+        <div className="mb-4 px-4 py-2 bg-red-100 text-red-700 rounded">
+          {error}
+        </div>
+      )}
 
       <div className="md:w-[400px] mx-auto">
         <div className="flex flex-col items-center justify-center p-5">
@@ -52,47 +56,50 @@ const SignUp = () => {
 
           <form onSubmit={handleSubmit} className="w-full space-y-5">
             <InputFelid
-              label="Username"
-              type="text"
-              name="username"
-              placeholder="Enter your username"
-              value={formData.username}
-              onChange={handleChange}
-            />
+          label="Username"
+          type="text"
+          name="username"
+          placeholder="Your username"
+          value={formData.username}
+          onChange={handleChange}
+          required
+        />
 
-            <InputFelid
-              label="Email"
-              type="email"
-              name="email"
-              placeholder="Enter your email"
-              value={formData.email}
-              onChange={handleChange}
-            />
+        <InputFelid
+          label="Email"
+          type="email"
+          name="email"
+          placeholder="you@example.com"
+          value={formData.email}
+          onChange={handleChange}
+          required
+        />
 
-            <InputFelid
-              label="Phone Number"
-              type="text"
-              name="phoneNumber"
-              placeholder="Enter your phone number"
-              value={formData.phoneNumber}
-              onChange={handleChange}
-            />
+        <InputFelid
+          label="Phone Number"
+          type="tel"
+          name="phoneNumber"
+          placeholder="+1 555 1234"
+          value={formData.phoneNumber}
+          onChange={handleChange}
+        />
 
-            <InputFelid
-              label="Password"
-              type="password"
-              name="password"
-              placeholder="Enter your password"
-              value={formData.password}
-              onChange={handleChange}
-            />
+        <InputFelid
+          label="Password"
+          type="password"
+          name="password"
+          placeholder="••••••••"
+          value={formData.password}
+          onChange={handleChange}
+          required
+        />
 
-            <Button
-              type="submit"
-              name={loading ? "Signing Up..." : "Sign Up"}
-              className="w-full bg-gradient-to-r from-bg to-[#6c5b50]"
-              disabled={loading}
-            />
+        <Button
+          type="submit"
+          name={loading ? 'Signing Up…' : 'Sign Up'}
+          className="w-full py-2 rounded-lg bg-gradient-to-r from-bg to-[#6c5b50] text-white"
+          disabled={loading}
+        />
           </form>
 
           <div className="w-full flex items-center justify-center mt-5 space-x-2">
@@ -103,23 +110,7 @@ const SignUp = () => {
             <span className="bg-secondary h-[1px] w-full"></span>
           </div>
 
-          <div className="flex items-center justify-center mt-5 space-x-3">
-            <img
-              src={googleIcon}
-              alt="google"
-              className="size-10 p-2 rounded-md border border-secondary cursor-pointer"
-            />
-            <img
-              src={appleIcon}
-              alt="apple"
-              className="size-10 p-2 rounded-md border border-secondary cursor-pointer"
-            />
-            <img
-              src={facebookIcon}
-              alt="facebook"
-              className="size-10 p-2 rounded-md border border-secondary cursor-pointer"
-            />
-          </div>
+
 
           <p className="mt-5">
             Already have an account?{" "}
@@ -133,4 +124,3 @@ const SignUp = () => {
   );
 };
 
-export default SignUp;
